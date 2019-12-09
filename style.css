@@ -1,0 +1,14 @@
+.item {
+    float: left;
+    padding: 1em;
+    margin: .5em;
+    border: solid black 1px;
+}
+
+.label {
+    display: block;
+}
+
+.thumbnail {
+
+}
