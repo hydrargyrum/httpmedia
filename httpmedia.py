@@ -62,9 +62,9 @@ def build_link(sub):
     return link
 
 
-@route('/static/style.css')
-def get_static():
-    return static_file('style.css', str(Path(__file__).parent))
+@route('/static/<file>')
+def get_static(file):
+    return static_file(file, str(Path(__file__).parent))
 
 
 @route('/thumb/<name>')
