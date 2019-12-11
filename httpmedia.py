@@ -9,57 +9,13 @@ handling "Range" header, making it suitable for seeking randomly in medias.
 import argparse
 from pathlib import Path
 from socketserver import ThreadingMixIn
-from urllib.parse import quote
 from wsgiref.simple_server import WSGIServer
 
-from bottle import route, run, abort, static_file, WSGIRefServer, redirect
+import bottle
+from bottle import (
+    route, run, abort, static_file, WSGIRefServer, redirect, template,
+)
 import vignette
-
-
-DIR = """<!DOCTYPE html>
-<html>
-<head>
-<link rel="stylesheet" href="/static/style.css" />
-<script src="/static/slideshow.css"></script>
-</head>
-<body>
-{0}
-</body>
-</html>
-"""
-
-
-def build_link(sub):
-    link = None
-    thumb = None
-
-    if not sub.is_dir():
-        thumb = vignette.get_thumbnail(str(sub), size='large')
-    if thumb:
-        thumb = Path(thumb)
-        link = f'''
-            <div class="item">
-                <a href="{quote(sub.name)}">
-                    <img class="thumbnail" src="/thumb/{thumb.name}" />
-                    <span class="label">
-                        {sub.name}
-                    </span>
-                </a>
-            </div>
-        '''
-
-    if not link:
-        link = f'''
-            <div class="item">
-                <a href="{quote(sub.name)}{"/" if sub.is_dir() else ""}">
-                    <span class="label">
-                        {sub.name}{"/" if sub.is_dir() else ""}
-                    </span>
-                </a>
-            </div>
-        '''
-
-    return link
 
 
 @route('/static/<file>')
@@ -76,6 +32,13 @@ def get_thumb(name):
     return static_file(name, str(dir))
 
 
+def build_thumb(sub):
+    if not sub.is_dir():
+        thumb = vignette.get_thumbnail(str(sub), size='large')
+        if thumb:
+            return Path(thumb)
+
+
 @route('/')
 @route('/<path:path>')
 def anything(path='/'):
@@ -89,11 +52,12 @@ def anything(path='/'):
         if not path.endswith('/'):
             redirect(f'{path}/')
 
-        parts = [
-            build_link(sub)
+        items = {
+            sub: build_thumb(sub)
             for sub in sorted(target.iterdir())
-        ]
-        return DIR.format('\n'.join(parts))
+        }
+
+        return template('base.tpl', items=items)
     elif target.is_file():
         return static_file(str(relative), str(ROOT))
 
@@ -124,4 +88,5 @@ parser.add_argument(
 args = parser.parse_args()
 
 ROOT = args.directory
+bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
 run(server=WSGIRefServer(host=args.bind, port=args.port, server_class=ThreadedServer))
