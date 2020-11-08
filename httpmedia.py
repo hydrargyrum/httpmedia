@@ -20,7 +20,7 @@ import vignette
 
 @route('/static/<file>')
 def get_static(file):
-    return static_file(file, str(Path(__file__).parent))
+    return static_file(file, str(Path(__file__).parent / 'static'))
 
 
 @route('/thumb/<name>')
