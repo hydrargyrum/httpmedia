@@ -5,6 +5,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.0/baguetteBox.min.js" integrity="sha256-yQGjQhFs3LtyiN5hhr3k9s9TWZOh/RzCkD3gwwCKlkg=" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/water.min.css" />
     <script src="/static/slideshow.js"></script>
 </head>
 <body>
