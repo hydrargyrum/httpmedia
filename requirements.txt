@@ -1,2 +1,3 @@
 vignette
 bottle
+PyJWT

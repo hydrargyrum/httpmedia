@@ -8,7 +8,7 @@
 % for sub, thumb in items.items():
     % if thumb:
         <a href="{{quote(sub.name)}}" style="display: none;">
-            <img src="/thumb/{{thumb.name}}" />
+            <img src="/thumb/{{thumb}}" />
         </a>
     % end
 % end

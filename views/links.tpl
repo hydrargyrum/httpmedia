@@ -6,7 +6,7 @@
     % if thumb:
 <div class="item">
     <a href="{{quote(sub.name)}}">
-        <img class="thumbnail" src="/thumb/{{thumb.name}}" />
+        <img class="thumbnail" src="/thumb/{{thumb}}" />
         <span class="label">
             {{sub.name}}
         </span>

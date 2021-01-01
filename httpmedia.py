@@ -8,6 +8,7 @@ handling "Range" header, making it suitable for seeking randomly in medias.
 
 import argparse
 from pathlib import Path
+from secrets import token_hex
 from socketserver import ThreadingMixIn
 from wsgiref.simple_server import WSGIServer
 
@@ -15,7 +16,11 @@ import bottle
 from bottle import (
     route, run, abort, static_file, WSGIRefServer, redirect, template,
 )
+import jwt
 import vignette
+
+
+JWT_SECRET = token_hex()
 
 
 @route('/static/<file>')
@@ -23,10 +28,16 @@ def get_static(file):
     return static_file(file, str(Path(__file__).parent / 'static'))
 
 
-@route('/thumb/<name>')
-def get_thumb(name):
+@route('/thumb/<token>')
+def get_thumb(token):
     if not vignette:
         abort(404)
+
+    try:
+        orig = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+    except jwt.exceptions.InvalidTokenError:
+        abort(403)
+    name = orig['t']
 
     dir = Path(vignette._thumb_path_prefix()) / 'large'
     return static_file(name, str(dir))
@@ -36,7 +47,9 @@ def build_thumb(sub):
     if not sub.is_dir():
         thumb = vignette.get_thumbnail(str(sub), size='large')
         if thumb:
-            return Path(thumb)
+            thumb = Path(thumb)
+            token = jwt.encode({'t': thumb.name}, JWT_SECRET, algorithm="HS256")
+            return token.decode('ascii')
 
 
 @route('/')
