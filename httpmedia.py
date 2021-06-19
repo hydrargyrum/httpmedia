@@ -7,9 +7,9 @@ handling "Range" header, making it suitable for seeking randomly in medias.
 """
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from secrets import token_hex
-from socketserver import ThreadingMixIn
 from wsgiref.simple_server import WSGIServer
 
 import bottle
@@ -77,6 +77,21 @@ def anything(path='/'):
     abort(404)
 
 
+class ThreadingMixIn:
+    # builtin socketserver.ThreadingMixIn has a memory leak: https://bugs.python.org/issue37193
+    # let's use a thread pool to fix it for now
+    def process_request_thread(self, request, client_address):
+        try:
+            self.finish_request(request, client_address)
+        except Exception:
+            self.handle_error(request, client_address)
+        finally:
+            self.shutdown_request(request)
+
+    def process_request(self, request, client_address):
+        pool.submit(self.process_request_thread, request, client_address)
+
+
 class ThreadedServer(ThreadingMixIn, WSGIServer):
     pass
 
@@ -102,4 +117,6 @@ args = parser.parse_args()
 
 ROOT = args.directory
 bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
-run(server=WSGIRefServer(host=args.bind, port=args.port, server_class=ThreadedServer))
+
+with ThreadPoolExecutor() as pool:
+    run(server=WSGIRefServer(host=args.bind, port=args.port, server_class=ThreadedServer))
