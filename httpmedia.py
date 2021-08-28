@@ -15,6 +15,7 @@ from wsgiref.simple_server import WSGIServer
 import bottle
 from bottle import (
     route, run, abort, static_file, WSGIRefServer, redirect, template,
+    request,
 )
 import jwt
 import vignette
@@ -60,13 +61,20 @@ def anything(path='/'):
     except (FileNotFoundError, ValueError):
         abort(403)
 
+    def sortfiles(p):
+        return p.name
+
+    if request.query.get("sort") == "mtime":
+        def sortfiles(p):
+            return -p.stat().st_mtime
+
     if target.is_dir():
         if not path.endswith('/'):
             redirect(f'{path}/')
 
         items = {
             sub: build_thumb(sub)
-            for sub in sorted(target.iterdir())
+            for sub in sorted(target.iterdir(), key=sortfiles)
         }
 
         return template('base.tpl', items=items)
