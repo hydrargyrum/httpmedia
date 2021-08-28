@@ -48,8 +48,7 @@ def build_thumb(sub):
         thumb = vignette.get_thumbnail(str(sub), size='large')
         if thumb:
             thumb = Path(thumb)
-            token = jwt.encode({'t': thumb.name}, JWT_SECRET, algorithm="HS256")
-            return token.decode('ascii')
+            return jwt.encode({'t': thumb.name}, JWT_SECRET, algorithm="HS256")
 
 
 @route('/')
