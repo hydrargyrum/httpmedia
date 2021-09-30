@@ -8,20 +8,46 @@ handling "Range" header, making it suitable for seeking randomly in medias.
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+import os
 from pathlib import Path
 from secrets import token_hex
 from wsgiref.simple_server import WSGIServer
 
 import bottle
 from bottle import (
-    route, run, abort, static_file, WSGIRefServer, redirect, template,
-    request,
+    route, run, abort, static_file, WSGIRefServer, redirect, template, install,
+    request, HTTPError,
 )
 import jwt
 import vignette
 
 
 JWT_SECRET = token_hex()
+
+
+class BasicAuthPlugin:
+    api = 2
+    name = "require-basic-auth"
+
+    def __init__(self, required_auth):
+        if not required_auth is None:
+            # just check type
+            _, _ = required_auth
+        self.required_auth = required_auth
+
+    def setup(self, app):
+        pass
+
+    def apply(self, callback, route):
+        def wrapper(*args, **kwargs):
+            if self.required_auth and request.auth != self.required_auth:
+                return HTTPError(
+                    401, 'Authentication required',
+                    **{'WWW-Authenticate': 'Basic realm="Private"'}
+                )
+            return callback(*args, **kwargs)
+
+        return wrapper
 
 
 @route('/static/<file>')
@@ -103,6 +129,23 @@ class ThreadedServer(ThreadingMixIn, WSGIServer):
     pass
 
 
+def parse_auth(s):
+    if s == "env":
+        try:
+            return (
+                os.environ["HTTPMEDIA_USER"],
+                os.environ["HTTPMEDIA_PASSWORD"]
+            )
+        except KeyError:
+            raise ValueError(
+                "Missing HTTPMEDIA_USER or HTTPMEDIA_PASSWORD"
+            )
+    user, sep, password = s.partition(":")
+    if not sep:
+        raise ValueError("Format is USER:PASSWORD")
+    return (user, password)
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--bind', '-b', default='', metavar='ADDRESS',
@@ -115,6 +158,10 @@ parser.add_argument(
     '[default:current directory]'
 )
 parser.add_argument(
+    '--auth', metavar='USER:PASSWORD', type=parse_auth,
+    help='Require HTTP authentication',
+)
+parser.add_argument(
     'port', action='store',
     default=8000, type=int,
     nargs='?',
@@ -124,6 +171,8 @@ args = parser.parse_args()
 
 ROOT = args.directory
 bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
+
+install(BasicAuthPlugin(args.auth))
 
 with ThreadPoolExecutor() as pool:
     run(server=WSGIRefServer(host=args.bind, port=args.port, server_class=ThreadedServer))
