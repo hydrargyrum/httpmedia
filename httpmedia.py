@@ -30,7 +30,7 @@ class BasicAuthPlugin:
     name = "require-basic-auth"
 
     def __init__(self, required_auth):
-        if not required_auth is None:
+        if required_auth is not None:
             # just check type
             _, _ = required_auth
         self.required_auth = required_auth
