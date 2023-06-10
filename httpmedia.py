@@ -181,5 +181,10 @@ def main():
         run(server=WSGIRefServer(host=args.bind, port=args.port, server_class=ThreadedServer))
 
 
+bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
+
 if __name__ == "__main__":
     main()
+else:
+    ROOT = Path(os.environ["HTTPMEDIA_ROOT"])
+    application = bottle.default_app()
