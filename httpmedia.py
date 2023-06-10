@@ -146,33 +146,40 @@ def parse_auth(s):
     return (user, password)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--bind', '-b', default='', metavar='ADDRESS',
-    help='Specify alternate bind address '
-    '[default: all interfaces]'
-)
-parser.add_argument(
-    '--directory', '-d', default=Path.cwd(), type=Path,
-    help='Specify alternative directory '
-    '[default:current directory]'
-)
-parser.add_argument(
-    '--auth', metavar='USER:PASSWORD', type=parse_auth,
-    help='Require HTTP authentication',
-)
-parser.add_argument(
-    'port', action='store',
-    default=8000, type=int,
-    nargs='?',
-    help='Specify alternate port [default: 8000]'
-)
-args = parser.parse_args()
+def main():
+    global ROOT, pool
 
-ROOT = args.directory
-bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--bind', '-b', default='', metavar='ADDRESS',
+        help='Specify alternate bind address '
+        '[default: all interfaces]'
+    )
+    parser.add_argument(
+        '--directory', '-d', default=Path.cwd(), type=Path,
+        help='Specify alternative directory '
+        '[default:current directory]'
+    )
+    parser.add_argument(
+        '--auth', metavar='USER:PASSWORD', type=parse_auth,
+        help='Require HTTP authentication',
+    )
+    parser.add_argument(
+        'port', action='store',
+        default=8000, type=int,
+        nargs='?',
+        help='Specify alternate port [default: 8000]'
+    )
+    args = parser.parse_args()
 
-install(BasicAuthPlugin(args.auth))
+    ROOT = args.directory
+    bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
 
-with ThreadPoolExecutor() as pool:
-    run(server=WSGIRefServer(host=args.bind, port=args.port, server_class=ThreadedServer))
+    install(BasicAuthPlugin(args.auth))
+
+    with ThreadPoolExecutor() as pool:
+        run(server=WSGIRefServer(host=args.bind, port=args.port, server_class=ThreadedServer))
+
+
+if __name__ == "__main__":
+    main()
