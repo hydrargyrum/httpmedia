@@ -152,13 +152,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--bind', '-b', default='', metavar='ADDRESS',
-        help='Specify alternate bind address '
-        '[default: all interfaces]'
+        help='Specify alternate bind address [default: all interfaces]'
     )
     parser.add_argument(
-        '--directory', '-d', default=Path.cwd(), type=Path,
-        help='Specify alternative directory '
-        '[default:current directory]'
+        '--directory', '-d',
+        help='Specify directory [default:current directory] env: HTTPMEDIA_ROOT'
     )
     parser.add_argument(
         '--auth', metavar='USER:PASSWORD', type=parse_auth,
@@ -172,8 +170,8 @@ def main():
     )
     args = parser.parse_args()
 
-    ROOT = args.directory
-    bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
+    ROOT = Path(args.directory or os.environ.get("HTTPMEDIA_ROOT") or Path.cwd())
+    ROOT = ROOT.resolve(strict=True)
 
     install(BasicAuthPlugin(args.auth))
 
@@ -188,4 +186,5 @@ if __name__ == "__main__":
     main()
 else:
     ROOT = Path(os.environ["HTTPMEDIA_ROOT"])
+    ROOT = ROOT.resolve(strict=True)
     application = bottle.default_app()
