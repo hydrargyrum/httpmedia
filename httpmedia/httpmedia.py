@@ -94,7 +94,7 @@ def anything(path='/'):
         return p.name
 
     if request.query.get("sort") == "mtime":
-        def sortfiles(p):
+        def sortfiles(p):  # noqa
             return -p.stat().st_mtime
 
     if target.is_dir():
