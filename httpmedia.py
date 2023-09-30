@@ -22,6 +22,9 @@ import jwt
 import vignette
 
 
+__version__ = "0.2.0"
+
+
 JWT_SECRET = token_hex()
 
 
