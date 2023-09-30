@@ -11,6 +11,14 @@
 * Free license ([WTFPLv2](COPYING.wtfpl))
 * Usable through WSGI or standalone
 
+## Install
+
+From [PyPI](https://pypi.org/project/httpmedia/):
+
+```
+pipx install httpmedia
+```
+
 ## Configuration
 
 ### Command-line arguments (not for WSGI)
