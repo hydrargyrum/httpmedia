@@ -27,6 +27,7 @@ pipx install httpmedia
 - `--root=DIR`: more prioritary than `$HTTPMEDIA_ROOT` if present, defaults to current directory if neither is set
 - `--auth=USER:PASSWORD`: protect with HTTP basic auth
 - `--auth=env`: same as above but fetch credentials from `$HTTPMEDIA_USER` and `$HTTPMEDIA_PASSWORD`
+- `--auth-realm=REALM`: HTTP basic auth realm (can be useful to distinguish different auths on the same host)
 - `PORT`
 
 ### Env vars (typically for WSGI)

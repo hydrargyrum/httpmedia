@@ -32,11 +32,12 @@ class BasicAuthPlugin:
     api = 2
     name = "require-basic-auth"
 
-    def __init__(self, required_auth):
+    def __init__(self, required_auth, realm="Private"):
         if required_auth is not None:
             # just check type
             _, _ = required_auth
         self.required_auth = required_auth
+        self.realm = realm
 
     def setup(self, app):
         pass
@@ -44,9 +45,10 @@ class BasicAuthPlugin:
     def apply(self, callback, route):
         def wrapper(*args, **kwargs):
             if self.required_auth and request.auth != self.required_auth:
+                realm = self.realm.replace('"', '')  # a bit rough
                 return HTTPError(
                     401, 'Authentication required',
-                    **{'WWW-Authenticate': 'Basic realm="Private"'}
+                    **{'WWW-Authenticate': 'Basic realm="%s"' % realm}
                 )
             return callback(*args, **kwargs)
 
@@ -166,6 +168,10 @@ def main():
         help='Require HTTP authentication',
     )
     parser.add_argument(
+        '--auth-realm', metavar='REALM', default="Private",
+        help='Realm text for HTTP authentication',
+    )
+    parser.add_argument(
         'port', action='store',
         default=8000, type=int,
         nargs='?',
@@ -176,7 +182,7 @@ def main():
     ROOT = Path(args.directory or os.environ.get("HTTPMEDIA_ROOT") or Path.cwd())
     ROOT = ROOT.resolve(strict=True)
 
-    install(BasicAuthPlugin(args.auth))
+    install(BasicAuthPlugin(args.auth, args.auth_realm))
 
     with ThreadPoolExecutor() as pool:
         run(server=WSGIRefServer(host=args.bind, port=args.port, server_class=ThreadedServer))
