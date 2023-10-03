@@ -190,3 +190,7 @@ def main():
 
 bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
 BASE_URL = os.environ.get("HTTPMEDIA_BASEURL", "")
+
+
+if __name__ == "__main__":
+    main()
