@@ -3,12 +3,12 @@
 ## What is it?
 
 * Simple file-sharing on HTTP (like [`python -m http.server`](https://docs.python.org/3/library/http.server.html#http-server-cli) on steroids)
-* Shows thumbnails for images/videos/others using [vignette](https://github.com/hydrargyrum/vignette)
+* Shows thumbnails for images/videos/others using [vignette](https://pypi.org/project/vignette/)
 * Supports audio/video file seeking (`python -m http.server` does not!)
 * Can display a slideshow using [baguettebox](https://feimosi.github.io/baguetteBox.js/)
 * HTTP basic auth for access protection
-* Few [dependencies](requirements.txt)
-* Free license ([WTFPLv2](COPYING.wtfpl))
+* Few [dependencies](https://gitlab.com/hydrargyrum/httpmedia/-/blob/main/requirements.txt)
+* Free license ([WTFPLv2](http://www.wtfpl.net/))
 * Usable through WSGI or standalone
 
 ## Install
