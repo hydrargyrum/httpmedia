@@ -34,3 +34,8 @@ pipx install httpmedia
 
 - `HTTPMEDIA_ROOT`: directory to be published
 - `HTTPMEDIA_BASEURL`: useful when reverse proxied, thumbnails and static resources will be refered to be under that base url so request are directed to httpmedia by the reverse proxy
+
+## Run in a container
+
+    podman build -t localhost/httpmedia -f Containerfile
+    podman run --rm -n httpmedia -v /your/files:/media -p 8000:8000 -e HTTPMEDIA_BASEURL=https://your.example/medias/ localhost/media
