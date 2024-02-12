@@ -25,9 +25,6 @@ import vignette
 __version__ = "0.2.0"
 
 
-JWT_SECRET = token_hex()
-
-
 class BasicAuthPlugin:
     api = 2
     name = "require-basic-auth"
@@ -190,6 +187,7 @@ def main():
 
 bottle.TEMPLATE_PATH = [str(Path(__file__).with_name('views'))]
 BASE_URL = os.environ.get("HTTPMEDIA_BASEURL", "")
+JWT_SECRET = os.environ.get("HTTPMEDIA_SECRET", token_hex())
 
 
 if __name__ == "__main__":
