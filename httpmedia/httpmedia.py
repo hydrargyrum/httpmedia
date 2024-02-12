@@ -66,18 +66,31 @@ def get_thumb(token):
         orig = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
     except jwt.exceptions.InvalidTokenError:
         abort(403)
-    name = orig['t']
 
-    dir = Path(vignette._thumb_path_prefix()) / 'large'
+    if "t" in orig:
+        name = orig['t']
+        dir = Path(vignette._thumb_path_prefix()) / 'large'
+    elif "r" in orig:
+        thumb = vignette.get_thumbnail(str(ROOT / orig["r"]))
+        if not thumb:
+            abort(404)
+        thumb = Path(thumb)
+        name = thumb.name
+        dir = str(thumb.parent)
+
     return static_file(name, str(dir))
 
 
-def build_thumb(sub):
+def build_thumb(sub, reqpath):
     if not sub.is_dir():
-        thumb = vignette.get_thumbnail(str(sub), size='large')
+        thumb = vignette.try_get_thumbnail(str(sub), size='large')
         if thumb:
-            thumb = Path(thumb)
-            return jwt.encode({'t': thumb.name}, JWT_SECRET, algorithm="HS256")
+            # thumb already exists, use it
+            to_encode = {"t": Path(thumb).name}
+        else:
+            # try to generate it later: when client tries to load image
+            to_encode = {"r": str(reqpath)}
+        return jwt.encode(to_encode, JWT_SECRET, algorithm="HS256")
 
 
 @route('/')
@@ -101,7 +114,7 @@ def anything(path='/'):
             redirect(f'{path}/')
 
         items = {
-            sub: build_thumb(sub)
+            sub: build_thumb(sub, sub.relative_to(ROOT))
             for sub in sorted(target.iterdir(), key=sortfiles)
         }
 
