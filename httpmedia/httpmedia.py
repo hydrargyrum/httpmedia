@@ -96,6 +96,10 @@ def build_thumb(sub, reqpath):
 @route('/')
 @route('/<path:path>')
 def anything(path='/'):
+    if "/." in path or path.startswith("."):
+        # forbid hidden files
+        abort(403)
+
     try:
         target = ROOT.joinpath(path.lstrip('/')).resolve(True)
         relative = target.relative_to(ROOT)
@@ -116,6 +120,7 @@ def anything(path='/'):
         items = {
             sub: build_thumb(sub, sub.relative_to(ROOT))
             for sub in sorted(target.iterdir(), key=sortfiles)
+            if not sub.name.startswith(".")
         }
 
         return template('base.tpl', items=items, base_url=BASE_URL)

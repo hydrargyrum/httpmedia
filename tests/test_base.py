@@ -5,7 +5,7 @@ from socket import create_connection
 import subprocess
 import sys
 import time
-from urllib.request import urlopen
+from urllib.request import urlopen, HTTPError
 
 import pytest
 
@@ -14,7 +14,10 @@ PORT = random.randrange(10000, 65000)
 
 
 def request(url):
-    response = urlopen(url)
+    try:
+        response = urlopen(url)
+    except HTTPError as exc:
+        return exc.status, exc.headers, exc.fp.read()
     return response.status, response.headers, response.read()
 
 
@@ -41,10 +44,17 @@ def server():
 def test_index(server):
     status, headers, body = request(f"http://localhost:{PORT}/")
     assert status == 200
-    assert "README.md" in body.decode()
+    body = body.decode()
+    assert "README.md" in body
+    assert ".gitattributes" not in body
 
 
 def test_file(server):
     status, headers, body = request(f"http://localhost:{PORT}/tests/test_base.py")
     assert status == 200
     assert body.decode().startswith("#!/usr/bin/env pytest")
+
+
+def test_hidden(server):
+    status, headers, body = request(f"http://localhost:{PORT}/.gitattributes")
+    assert status == 403
