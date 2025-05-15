@@ -12,7 +12,7 @@ WORKDIR /home/httpmedia
 
 RUN python3 -m pip install /src
 
-CMD python3 -m httpmedia
+CMD ["python3", "-m", "httpmedia"]
 
 EXPOSE 8000
 VOLUME /media
@@ -22,4 +22,4 @@ FROM wsgiref AS gunicorn
 
 RUN python3 -m pip install gunicorn
 
-CMD HTTPMEDIA_ROOT=/media python3 -m gunicorn --bind=0.0.0.0:8000 --access-logfile=- --name=httpmedia httpmedia.wsgi
+CMD ["env", "HTTPMEDIA_ROOT=/media", "python3", "-m", "gunicorn", "--bind=0.0.0.0:8000", "--access-logfile=-", "--name=httpmedia", "httpmedia.wsgi"]
